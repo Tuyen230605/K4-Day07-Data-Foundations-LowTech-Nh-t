@@ -63,20 +63,32 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 
 | Tài liệu | Chiến lược (Strategy) | Số lượng Chunk | Độ dài trung bình | Giữ được ngữ cảnh không? |
 |-----------|----------|-------------|------------|-------------------|
-| | FixedSizeChunker (`fixed_size`) | | | |
-| | SentenceChunker (`by_sentences`) | | | |
-| | RecursiveChunker (`recursive`) | | | |
+| `dispute-resolution-process` | FixedSizeChunker (`fixed_size`) | 2 | 252,00 | Một số ranh giới có thể cắt giữa ý. |
+| `dispute-resolution-process` | SentenceChunker (`by_sentences`) | 2 | 238,50 | Có, giữ trọn câu nhưng chunk khá dài. |
+| `dispute-resolution-process` | RecursiveChunker (`recursive`) | 4 | 118,50 | Giữ ranh giới tự nhiên nhưng ý bị chia nhỏ hơn. |
+| `return-com-rules` | FixedSizeChunker (`fixed_size`) | 1 | 225,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
+| `return-com-rules` | SentenceChunker (`by_sentences`) | 1 | 225,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
+| `return-com-rules` | RecursiveChunker (`recursive`) | 1 | 225,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
+| `return-eligibility` | FixedSizeChunker (`fixed_size`) | 1 | 219,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
+| `return-eligibility` | SentenceChunker (`by_sentences`) | 1 | 219,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
+| `return-eligibility` | RecursiveChunker (`recursive`) | 1 | 219,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
 
 ### Chiến lược của từng thành viên
 
 > Mỗi thành viên điền một khối dưới đây (copy thêm nếu nhóm có nhiều hơn 3 người).
 
-**Thành viên 1 — [Tên]**
-- **Loại chiến lược:** [FixedSize / Sentence / Recursive / custom]
-- **Mô tả & lý do chọn cho chủ đề này:** *(2-3 câu)*
+**Thành viên 1 — Nguyễn Hoàng Minh (2A202601764)**
+- **Loại chiến lược:** Custom `HeadingAwareChunker(chunk_size=260)` với `RecursiveChunker` fallback.
+- **Mô tả & lý do chọn cho chủ đề này:** Chính sách Shopee được tổ chức theo tiêu đề và điều/khoản, nên heading là ranh giới ngữ nghĩa tự nhiên. Section vượt 260 ký tự được chia recursive; heading được gắn lại vào mọi mảnh con để chunk sau không mất ngữ cảnh.
 - **Code snippet (nếu custom):**
 ```python
-# Dán mã nguồn (implementation) vào đây
+sections = re.split(r"(?=^#{1,6}\s+)", text, flags=re.MULTILINE)
+for section in sections:
+    if len(section) <= self.chunk_size:
+        chunks.append(section.strip())
+    else:
+        pieces = RecursiveChunker(chunk_size=available_size).chunk(body)
+        chunks.extend(f"{heading}\n{piece}" for piece in pieces)
 ```
 
 **Thành viên 2 — [Tên]**
