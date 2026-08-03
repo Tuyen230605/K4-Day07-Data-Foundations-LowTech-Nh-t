@@ -104,12 +104,10 @@ class SentenceChunker:
 ```
 
 **Thành viên 3 — [Tên Thành Viên 3]**
-- **Loại chiến lược:** `RecursiveChunker`
+- **Loại chiến lược:** ``
 - **Mô tả & lý do chọn:** Sử dụng thuật toán ngắt đệ quy theo thứ tự các dấu phân cách `["\n\n", "\n", " ", ""]` để tôn trọng cấu trúc đoạn văn Markdown.
 - **Code snippet (nếu custom):**
-```python
-chunker = RecursiveChunker(chunk_size=300)
-```
+
 
 ### So Sánh Giữa Các Thành Viên
 
