@@ -1,7 +1,12 @@
 # Báo Cáo Nhóm — Lab 7: Embedding & Vector Store
 
-**Nhóm:** [Tên nhóm]
-**Thành viên:** [Họ tên từng thành viên]
+**Nhóm:** LowTech Nhất
+
+**Thành viên:** 
+- Nguyễn Thái Tú - 2A202601504
+- Nguyễn Hoàng Minh - 2A202601764
+- Nguyễn Việt Hải - 2A202601656
+- Đoàn Văn Tuyền - 2A202601374
 **Ngày:** 2026-08-03
 
 > **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_CANHAN.md`. Chi tiết thang điểm: `docs/SCORING.md`.
@@ -161,12 +166,32 @@ class RecursiveChunker:
         return final
 ```
 
-**Thành viên 4 — [Tên] ([MSSV])**
-- **Loại chiến lược:** [FixedSize / Sentence / Recursive / custom]
-- **Mô tả & lý do chọn:** *(2-3 câu)*
+**Thành viên 4 — Đoàn Văn Tuyền (2A202601374)**
+- **Loại chiến lược:** Custom `HybridChunker(chunk_size=300)`
+- **Mô tả & lý do chọn:** Kết hợp điểm mạnh của `SentenceChunker` (bảo toàn ngữ nghĩa câu) và `FixedSizeChunker` (kiểm soát độ dài). Thuật toán sẽ chia nhỏ văn bản thành các câu, sau đó gộp các câu lại với nhau sao cho tổng chiều dài không bao giờ vượt quá `chunk_size` (300 ký tự). Giúp tối ưu hóa không gian vector (kích thước đồng đều) mà không cắt rách từ ở giữa câu.
 - **Code snippet (nếu custom):**
 ```python
-# Dán mã nguồn (implementation) vào đây
+import re
+
+class HybridChunker:
+    def __init__(self, chunk_size=300):
+        self.chunk_size = chunk_size
+        self.sentence_pattern = re.compile(r'(?<=\. )|(?<=\! )|(?<=\? )|(?<=\.\n)')
+
+    def chunk(self, text: str) -> list[str]:
+        sentences = [s.strip() for s in self.sentence_pattern.split(text) if s.strip()]
+        chunks, current = [], ""
+        for s in sentences:
+            if not current:
+                current = s
+            elif len(current) + 1 + len(s) <= self.chunk_size:
+                current += " " + s
+            else:
+                chunks.append(current)
+                current = s
+        if current:
+            chunks.append(current)
+        return chunks
 ```
 
 ### So Sánh Giữa Các Thành Viên
@@ -174,12 +199,12 @@ class RecursiveChunker:
 | Thành viên | Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
 | Thành viên 1 (Nguyễn Hoàng Minh) | Custom HeadingAwareChunker | 10 / 10 | Đã bảo toàn ngữ cảnh tiêu đề cho từng chunk con | Tăng kích thước chunk nếu tiêu đề quá dài |
-| Thành viên 2 (Nguyễn Việt Hải) | SentenceChunker | 10 / 10 | Giữ trọn vẹn ngữ nghĩa từng câu chính sách, không rách từ | Độ dài chunk phụ thuộc độ dài câu |
+| Thành viên 2 (Nguyễn Việt Hải) | SentenceChunker | 10 / 10 | Giữ trọn vẹn ngữ nghĩa từng câu chính sách, không rách từ | Độ dài chunk phụ thuộc độ dài câu, thiếu ổn định |
 | Thành viên 3 (Nguyễn Thái Tú) | RecursiveChunker(200) | 10 / 10 | Kiểm soát chunk_size tối đa, ưu tiên ranh giới tự nhiên, chunks đều | Có thể tách ý liên quan thành 2 chunk khi gần giới hạn |
-| Thành viên 4 | | | | |
+| Thành viên 4 (Đoàn Văn Tuyền) | Custom HybridChunker(300) | 10 / 10 | Độ dài rất đồng đều, không cắt rách câu, cân bằng tốt nhất | Thuật toán chạy chậm hơn FixedSizeChunker một chút |
 
 **Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> *Viết 2-3 câu — đây là phần được đánh giá cao nhất (khả năng suy nghĩ & giải thích):*
+> Cả 4 chiến lược đều đạt 10/10 nhờ chất lượng dữ liệu sạch, tuy nhiên **HybridChunker** và **HeadingAwareChunker** là tốt nhất cho văn bản Luật/Chính sách. HeadingAwareChunker rất phù hợp vì văn bản Shopee phân theo "Điều 1, Điều 2...", còn HybridChunker lại tối ưu cho Embedder (Mô hình nhúng) vì duy trì được độ dài chunk ổn định, không làm mô hình bị "nhập nhằng" giữa các đoạn quá dài hoặc quá ngắn.
 
 ---
 
@@ -203,27 +228,29 @@ class RecursiveChunker:
 
 | # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
 |---|---------|-------------------------------|-------------------------------|---------|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-| 4 | | | | |
-| 5 | | | | |
+| 1 | Thời hạn yêu cầu trả hàng? | HybridChunker / HeadingAware | Có (Top 1) | Điểm tối đa (2/2) cho tất cả thành viên. Lọc buyer hiệu quả. |
+| 2 | Căn cứ trả hàng? | RecursiveChunker | Có (Top 1) | Điểm tối đa (2/2). Dễ dàng tìm thấy nhờ từ khóa trực tiếp. |
+| 3 | Thời hạn phản hồi của người bán? | SentenceChunker | Có (Top 1) | Điểm tối đa (2/2). Tránh nhầm lẫn với quy định của người mua. |
+| 4 | Bằng chứng hoàn trả? | FixedSizeChunker | Có (Top 1) | Điểm tối đa (2/2). Cần nhiều text nên chunk lớn phát huy tác dụng. |
+| 5 | Xử lý tranh chấp trong bao lâu? | HybridChunker | Có (Top 1) | Điểm tối đa (2/2). Dễ dàng truy xuất thông tin quy định thời hạn. |
 
 **Lọc bằng metadata có giúp ích không? Ở câu hỏi nào?**
-> *Viết 2-3 câu:*
+> Chắc chắn có, đặc biệt ở **Câu hỏi số 3 (Thời hạn phản hồi)**. Trong hệ thống TMĐT, cả Người Mua và Người Bán đều có các "thời hạn" (deadline) khác nhau. Nếu không dùng bộ lọc `customer_role=seller`, LLM rất dễ truy xuất nhầm vào văn bản quy định 15 ngày của người mua, gây ra câu trả lời sai lệch (hallucination).
 
 ---
 
 ## 4. Thuyết trình (Demo) & Bài học nhóm — Nhóm (5 điểm)
 
 **Những phân tích (insights) hay nhất nhóm sẽ trình bày:**
-> *Liệt kê 2-3 ý:*
+- Dữ liệu rác (Garbage in, garbage out): Chất lượng của hệ thống RAG không chỉ nằm ở mô hình AI, mà nằm ở dữ liệu đầu vào. Việc cất công định dạng file Markdown với metadata và làm sạch text giúp hệ thống đạt 100% độ chính xác ngay trong lần thử đầu tiên.
+- Không có một "Chiến lược Chunking vạn năng": Mỗi loại tài liệu yêu cầu một cách cắt khác nhau (ví dụ: Luật thì cần chia theo Heading/Câu chữ, Tin tức thì có thể chia theo số lượng từ).
+- Pre-filtering (Lọc metadata trước) bằng Vector Database là tính năng "sống còn" đối với các dự án thực tế có độ phức tạp cao, giúp tiết kiệm chi phí gọi LLM và tránh ảo giác.
 
 **Bài học rút ra khi so sánh trong nhóm:**
-> *Viết 2-3 câu — cùng tài liệu nhưng chiến lược khác nhau dẫn tới khác biệt gì?*
+> Khi cắt bằng `FixedSizeChunker`, đôi lúc một câu điều kiện bị cắt làm đôi khiến ngữ nghĩa bị méo mó. Trái lại, `SentenceChunker` hay `HybridChunker` tuy code phức tạp hơn một chút nhưng cung cấp đoạn ngữ cảnh nguyên vẹn, giúp câu trả lời của AI tự nhiên và chính xác hơn nhiều.
 
 **Nếu làm lại, nhóm sẽ thay đổi gì trong chiến lược dữ liệu (data strategy)?**
-> *Viết 2-3 câu:*
+> Nhóm sẽ thu thập dữ liệu bằng cách tự động cào (crawl) thay vì copy tay, đồng thời sẽ trích xuất luôn các câu hỏi thường gặp (FAQ) trên trang Shopee để tạo ra một bộ dữ liệu đồ sộ hơn (tầm 100 tài liệu) nhằm kiểm chứng xem hệ thống có duy trì được độ chính xác 100% hay không khi kho lưu trữ phình to ra.
 
 ---
 
@@ -231,8 +258,8 @@ class RecursiveChunker:
 
 | Tiêu chí | Điểm tự đánh giá |
 |----------|-------------------|
-| Lựa chọn tài liệu (Document Set Quality) | / 10 |
-| Thiết kế chiến lược (Strategy Design) | / 15 |
-| Chất lượng truy xuất (Retrieval Quality) | / 10 |
-| Thuyết trình (Demo) | / 5 |
-| **Tổng phần nhóm** | **/ 40** |
+| Lựa chọn tài liệu (Document Set Quality) | 10 / 10 |
+| Thiết kế chiến lược (Strategy Design) | 15 / 15 |
+| Chất lượng truy xuất (Retrieval Quality) | 10 / 10 |
+| Thuyết trình (Demo) | 5 / 5 |
+| **Tổng phần nhóm** | **40 / 40** |
