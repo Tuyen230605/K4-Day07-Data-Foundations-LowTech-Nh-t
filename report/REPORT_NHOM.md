@@ -1,7 +1,12 @@
 # Báo Cáo Nhóm — Lab 7: Embedding & Vector Store
 
-**Nhóm:** [Tên nhóm]
-**Thành viên:** [Họ tên từng thành viên]
+**Nhóm:** LowTech Nhất
+
+**Thành viên:** 
+- Nguyễn Thái Tú - 2A202601504
+- Nguyễn Hoàng Minh - 2A202601764
+- Nguyễn Việt Hải - 2A202601656
+- Đoàn Văn Tuyền - 2A202601374
 **Ngày:** 2026-08-03
 
 > **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_CANHAN.md`. Chi tiết thang điểm: `docs/SCORING.md`.
@@ -63,42 +68,143 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 
 | Tài liệu | Chiến lược (Strategy) | Số lượng Chunk | Độ dài trung bình | Giữ được ngữ cảnh không? |
 |-----------|----------|-------------|------------|-------------------|
-| | FixedSizeChunker (`fixed_size`) | | | |
-| | SentenceChunker (`by_sentences`) | | | |
-| | RecursiveChunker (`recursive`) | | | |
+| `dispute-resolution-process` | FixedSizeChunker (`fixed_size`) | 2 | 252,00 | Một số ranh giới có thể cắt giữa ý. |
+| `dispute-resolution-process` | SentenceChunker (`by_sentences`) | 2 | 238,50 | Có, giữ trọn câu nhưng chunk khá dài. |
+| `dispute-resolution-process` | RecursiveChunker (`recursive`) | 4 | 118,50 | Giữ ranh giới tự nhiên nhưng ý bị chia nhỏ hơn. |
+| `return-com-rules` | FixedSizeChunker (`fixed_size`) | 1 | 225,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
+| `return-com-rules` | SentenceChunker (`by_sentences`) | 1 | 225,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
+| `return-com-rules` | RecursiveChunker (`recursive`) | 1 | 225,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
+| `return-eligibility` | FixedSizeChunker (`fixed_size`) | 1 | 219,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
+| `return-eligibility` | SentenceChunker (`by_sentences`) | 1 | 219,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
+| `return-eligibility` | RecursiveChunker (`recursive`) | 1 | 219,00 | Có, toàn bộ tài liệu nằm trong một chunk. |
 
 ### Chiến lược của từng thành viên
 
 > Mỗi thành viên điền một khối dưới đây (copy thêm nếu nhóm có nhiều hơn 3 người).
 
-**Thành viên 1 — [Tên]**
-- **Loại chiến lược:** [FixedSize / Sentence / Recursive / custom]
-- **Mô tả & lý do chọn cho chủ đề này:** *(2-3 câu)*
+**Thành viên 1 — Nguyễn Hoàng Minh (2A202601764)**
+- **Loại chiến lược:** Custom `HeadingAwareChunker(chunk_size=260)` với `RecursiveChunker` fallback.
+- **Mô tả & lý do chọn cho chủ đề này:** Chính sách Shopee được tổ chức theo tiêu đề và điều/khoản, nên heading là ranh giới ngữ nghĩa tự nhiên. Section vượt 260 ký tự được chia recursive; heading được gắn lại vào mọi mảnh con để chunk sau không mất ngữ cảnh.
 - **Code snippet (nếu custom):**
 ```python
-# Dán mã nguồn (implementation) vào đây
+sections = re.split(r"(?=^#{1,6}\s+)", text, flags=re.MULTILINE)
+for section in sections:
+    if len(section) <= self.chunk_size:
+        chunks.append(section.strip())
+    else:
+        pieces = RecursiveChunker(chunk_size=available_size).chunk(body)
+        chunks.extend(f"{heading}\n{piece}" for piece in pieces)
 ```
 
-**Thành viên 2 — [Tên]**
-- **Loại chiến lược:**
-- **Mô tả & lý do chọn:**
-- **Code snippet (nếu custom):**
+**Thành viên 2 — Nguyễn Việt Hải**
+- **Loại chiến lược:** `SentenceChunker` (`max_sentences_per_chunk=3`)
+- **Mô tả & lý do chọn:** Lựa chọn chiến lược ngắt theo ranh giới câu bằng biểu thức chính quy (`r'(?<=\. )|(?<=\! )|(?<=\? )|(?<=\.\n)'`). Văn bản chính sách TMĐT tiếng Việt có cấu trúc câu quy định thời hạn/điều kiện rất rõ ràng; việc chia theo ranh giới câu giúp đảm bảo từng quy định được giữ nguyên vẹn ngữ nghĩa, không bị ngắt rách từ hay ngắt giữa câu như `FixedSizeChunker`.
+- **Code snippet:**
+```python
+class SentenceChunker:
+    def __init__(self, max_sentences_per_chunk: int = 3) -> None:
+        self.max_sentences_per_chunk = max(1, max_sentences_per_chunk)
 
-**Thành viên 3 — [Tên]**
-- **Loại chiến lược:**
-- **Mô tả & lý do chọn:**
+    def chunk(self, text: str) -> list[str]:
+        if not text:
+            return []
+        pattern = r'(?<=\. )|(?<=\! )|(?<=\? )|(?<=\.\n)'
+        parts = re.split(pattern, text)
+        sentences = [p.strip() for p in parts if p.strip()]
+        
+        chunks = []
+        for i in range(0, len(sentences), self.max_sentences_per_chunk):
+            chunk_sentences = sentences[i : i + self.max_sentences_per_chunk]
+            chunks.append(" ".join(chunk_sentences))
+        return chunks
+```
+
+**Thành viên 3 — Nguyễn Thái Tú (2A202601504)**
+- **Loại chiến lược:** `RecursiveChunker` (`chunk_size=200`)
+- **Mô tả & lý do chọn:** Sử dụng `RecursiveChunker` với danh sách dấu phân cách theo thứ tự ưu tiên: `\n\n` → `\n` → `. ` → ` ` → `""`. Văn bản chính sách TMĐT thường có các đoạn (paragraph) và câu rõ ràng — chiến lược đệ quy ưu tiên tách tại ranh giới tự nhiên (paragraph, dòng, câu) trước khi phải cắt giữa từ, giúp tối ưu cả tính mạch lạc lẫn kích thước chunk đồng đều (~120-200 ký tự). So với SentenceChunker, RecursiveChunker kiểm soát được `chunk_size` tối đa, tránh chunk quá dài khi tài liệu có câu dài.
+- **Code snippet:**
+```python
+class RecursiveChunker:
+    DEFAULT_SEPARATORS = ["\n\n", "\n", ". ", " ", ""]
+
+    def __init__(self, separators=None, chunk_size=200):
+        self.separators = self.DEFAULT_SEPARATORS if separators is None else list(separators)
+        self.chunk_size = chunk_size
+
+    def chunk(self, text):
+        if not text:
+            return []
+        return self._split(text, self.separators)
+
+    def _split(self, current_text, remaining_separators):
+        if len(current_text) <= self.chunk_size:
+            return [current_text]
+        if not remaining_separators:
+            return [current_text[i:i+self.chunk_size] for i in range(0, len(current_text), self.chunk_size)]
+        separator = remaining_separators[0]
+        next_separators = remaining_separators[1:]
+        if separator == "":
+            return [current_text[i:i+self.chunk_size] for i in range(0, len(current_text), self.chunk_size)]
+        parts = current_text.split(separator)
+        chunks, current_chunk = [], ""
+        for part in parts:
+            if not current_chunk:
+                current_chunk = part
+            elif len(current_chunk) + len(separator) + len(part) <= self.chunk_size:
+                current_chunk += separator + part
+            else:
+                chunks.append(current_chunk)
+                current_chunk = part
+        if current_chunk:
+            chunks.append(current_chunk)
+        final = []
+        for c in chunks:
+            if len(c) > self.chunk_size:
+                final.extend(self._split(c, next_separators))
+            else:
+                final.append(c)
+        return final
+```
+
+**Thành viên 4 — Đoàn Văn Tuyền (2A202601374)**
+- **Loại chiến lược:** Custom `HybridChunker(chunk_size=300)`
+- **Mô tả & lý do chọn:** Kết hợp điểm mạnh của `SentenceChunker` (bảo toàn ngữ nghĩa câu) và `FixedSizeChunker` (kiểm soát độ dài). Thuật toán sẽ chia nhỏ văn bản thành các câu, sau đó gộp các câu lại với nhau sao cho tổng chiều dài không bao giờ vượt quá `chunk_size` (300 ký tự). Giúp tối ưu hóa không gian vector (kích thước đồng đều) mà không cắt rách từ ở giữa câu.
 - **Code snippet (nếu custom):**
+```python
+import re
+
+class HybridChunker:
+    def __init__(self, chunk_size=300):
+        self.chunk_size = chunk_size
+        self.sentence_pattern = re.compile(r'(?<=\. )|(?<=\! )|(?<=\? )|(?<=\.\n)')
+
+    def chunk(self, text: str) -> list[str]:
+        sentences = [s.strip() for s in self.sentence_pattern.split(text) if s.strip()]
+        chunks, current = [], ""
+        for s in sentences:
+            if not current:
+                current = s
+            elif len(current) + 1 + len(s) <= self.chunk_size:
+                current += " " + s
+            else:
+                chunks.append(current)
+                current = s
+        if current:
+            chunks.append(current)
+        return chunks
+```
 
 ### So Sánh Giữa Các Thành Viên
 
 | Thành viên | Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
-| | | | | |
-| | | | | |
-| | | | | |
+| Thành viên 1 (Nguyễn Hoàng Minh) | Custom HeadingAwareChunker | 10 / 10 | Đã bảo toàn ngữ cảnh tiêu đề cho từng chunk con | Tăng kích thước chunk nếu tiêu đề quá dài |
+| Thành viên 2 (Nguyễn Việt Hải) | SentenceChunker | 10 / 10 | Giữ trọn vẹn ngữ nghĩa từng câu chính sách, không rách từ | Độ dài chunk phụ thuộc độ dài câu, thiếu ổn định |
+| Thành viên 3 (Nguyễn Thái Tú) | RecursiveChunker(200) | 10 / 10 | Kiểm soát chunk_size tối đa, ưu tiên ranh giới tự nhiên, chunks đều | Có thể tách ý liên quan thành 2 chunk khi gần giới hạn |
+| Thành viên 4 (Đoàn Văn Tuyền) | Custom HybridChunker(300) | 10 / 10 | Độ dài rất đồng đều, không cắt rách câu, cân bằng tốt nhất | Thuật toán chạy chậm hơn FixedSizeChunker một chút |
 
 **Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> *Viết 2-3 câu — đây là phần được đánh giá cao nhất (khả năng suy nghĩ & giải thích):*
+> Cả 4 chiến lược đều đạt 10/10 nhờ chất lượng dữ liệu sạch, tuy nhiên **HybridChunker** và **HeadingAwareChunker** là tốt nhất cho văn bản Luật/Chính sách. HeadingAwareChunker rất phù hợp vì văn bản Shopee phân theo "Điều 1, Điều 2...", còn HybridChunker lại tối ưu cho Embedder (Mô hình nhúng) vì duy trì được độ dài chunk ổn định, không làm mô hình bị "nhập nhằng" giữa các đoạn quá dài hoặc quá ngắn.
 
 ---
 
@@ -122,27 +228,29 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 
 | # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
 |---|---------|-------------------------------|-------------------------------|---------|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-| 4 | | | | |
-| 5 | | | | |
+| 1 | Thời hạn yêu cầu trả hàng? | HybridChunker / HeadingAware | Có (Top 1) | Điểm tối đa (2/2) cho tất cả thành viên. Lọc buyer hiệu quả. |
+| 2 | Căn cứ trả hàng? | RecursiveChunker | Có (Top 1) | Điểm tối đa (2/2). Dễ dàng tìm thấy nhờ từ khóa trực tiếp. |
+| 3 | Thời hạn phản hồi của người bán? | SentenceChunker | Có (Top 1) | Điểm tối đa (2/2). Tránh nhầm lẫn với quy định của người mua. |
+| 4 | Bằng chứng hoàn trả? | FixedSizeChunker | Có (Top 1) | Điểm tối đa (2/2). Cần nhiều text nên chunk lớn phát huy tác dụng. |
+| 5 | Xử lý tranh chấp trong bao lâu? | HybridChunker | Có (Top 1) | Điểm tối đa (2/2). Dễ dàng truy xuất thông tin quy định thời hạn. |
 
 **Lọc bằng metadata có giúp ích không? Ở câu hỏi nào?**
-> *Viết 2-3 câu:*
+> Chắc chắn có, đặc biệt ở **Câu hỏi số 3 (Thời hạn phản hồi)**. Trong hệ thống TMĐT, cả Người Mua và Người Bán đều có các "thời hạn" (deadline) khác nhau. Nếu không dùng bộ lọc `customer_role=seller`, LLM rất dễ truy xuất nhầm vào văn bản quy định 15 ngày của người mua, gây ra câu trả lời sai lệch (hallucination).
 
 ---
 
 ## 4. Thuyết trình (Demo) & Bài học nhóm — Nhóm (5 điểm)
 
 **Những phân tích (insights) hay nhất nhóm sẽ trình bày:**
-> *Liệt kê 2-3 ý:*
+- Dữ liệu rác (Garbage in, garbage out): Chất lượng của hệ thống RAG không chỉ nằm ở mô hình AI, mà nằm ở dữ liệu đầu vào. Việc cất công định dạng file Markdown với metadata và làm sạch text giúp hệ thống đạt 100% độ chính xác ngay trong lần thử đầu tiên.
+- Không có một "Chiến lược Chunking vạn năng": Mỗi loại tài liệu yêu cầu một cách cắt khác nhau (ví dụ: Luật thì cần chia theo Heading/Câu chữ, Tin tức thì có thể chia theo số lượng từ).
+- Pre-filtering (Lọc metadata trước) bằng Vector Database là tính năng "sống còn" đối với các dự án thực tế có độ phức tạp cao, giúp tiết kiệm chi phí gọi LLM và tránh ảo giác.
 
 **Bài học rút ra khi so sánh trong nhóm:**
-> *Viết 2-3 câu — cùng tài liệu nhưng chiến lược khác nhau dẫn tới khác biệt gì?*
+> Khi cắt bằng `FixedSizeChunker`, đôi lúc một câu điều kiện bị cắt làm đôi khiến ngữ nghĩa bị méo mó. Trái lại, `SentenceChunker` hay `HybridChunker` tuy code phức tạp hơn một chút nhưng cung cấp đoạn ngữ cảnh nguyên vẹn, giúp câu trả lời của AI tự nhiên và chính xác hơn nhiều.
 
 **Nếu làm lại, nhóm sẽ thay đổi gì trong chiến lược dữ liệu (data strategy)?**
-> *Viết 2-3 câu:*
+> Nhóm sẽ thu thập dữ liệu bằng cách tự động cào (crawl) thay vì copy tay, đồng thời sẽ trích xuất luôn các câu hỏi thường gặp (FAQ) trên trang Shopee để tạo ra một bộ dữ liệu đồ sộ hơn (tầm 100 tài liệu) nhằm kiểm chứng xem hệ thống có duy trì được độ chính xác 100% hay không khi kho lưu trữ phình to ra.
 
 ---
 
@@ -150,8 +258,8 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 
 | Tiêu chí | Điểm tự đánh giá |
 |----------|-------------------|
-| Lựa chọn tài liệu (Document Set Quality) | / 10 |
-| Thiết kế chiến lược (Strategy Design) | / 15 |
-| Chất lượng truy xuất (Retrieval Quality) | / 10 |
-| Thuyết trình (Demo) | / 5 |
-| **Tổng phần nhóm** | **/ 40** |
+| Lựa chọn tài liệu (Document Set Quality) | 10 / 10 |
+| Thiết kế chiến lược (Strategy Design) | 15 / 15 |
+| Chất lượng truy xuất (Retrieval Quality) | 10 / 10 |
+| Thuyết trình (Demo) | 5 / 5 |
+| **Tổng phần nhóm** | **40 / 40** |

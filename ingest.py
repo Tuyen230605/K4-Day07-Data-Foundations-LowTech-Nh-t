@@ -28,9 +28,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable
 
-from src.chunking import FixedSizeChunker
-from src.models import Document
-from src.store import EmbeddingStore
+from src.DOANVANTUYEN_2A202601374.chunking import FixedSizeChunker
+from src.DOANVANTUYEN_2A202601374.models import Document
+from src.DOANVANTUYEN_2A202601374.store import EmbeddingStore
 
 TEXT_EXTENSIONS = {".md", ".txt"}
 

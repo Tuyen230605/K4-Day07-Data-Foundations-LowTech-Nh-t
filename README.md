@@ -1,5 +1,11 @@
 # K4 — Ngày 7: Nền Tảng Dữ Liệu, Embedding & Vector Store
 
+**Thành viên nhóm:**
+- Nguyễn Thái Tú - 2A202601504
+- Nguyễn Hoàng Minh - 2A202601764
+- Nguyễn Việt Hải - 2A202601656
+- Đoàn Văn Tuyền - 2A202601374
+
 > Bản K4 của Lab 07. Hướng dẫn Codelabs được phát riêng trên lớp/LMS (không kèm trong repo); yêu cầu Giai đoạn 2 riêng xem [K4_VARIANT.md](K4_VARIANT.md).
 
 ---
