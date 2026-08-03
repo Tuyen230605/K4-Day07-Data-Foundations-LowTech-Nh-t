@@ -2,7 +2,7 @@
 
 **Nhóm:** [Tên nhóm]
 **Thành viên:** [Họ tên từng thành viên]
-**Ngày:** [Ngày nộp]
+**Ngày:** 2026-08-03
 
 > **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_CANHAN.md`. Chi tiết thang điểm: `docs/SCORING.md`.
 
@@ -17,28 +17,39 @@
 **Chủ đề (cố định theo lớp K4):** Chính sách thương mại điện tử / hỗ trợ khách hàng (thanh toán, đổi trả, giao hàng, quyền riêng tư, điều kiện người bán…).
 
 **Phạm vi cụ thể nhóm tập trung:**
-> *1 câu — ví dụ: đổi trả + điều kiện người bán.*
+> Quy định trả hàng, hoàn tiền và giải quyết tranh chấp của Shopee dành cho Người Mua và Người Bán. Corpus gồm 7 tài liệu theo điều/khoản, được tóm lược có truy vết từ 2 trang chính sách chính thức của Shopee.
 
 ### Danh sách tài liệu (Data Inventory)
 
 | # | Tên tài liệu | Nguồn (Source URL) | Ngày lấy / Phiên bản | Số ký tự | Metadata đã gán |
 |---|--------------|------------|--------------------|----------|-----------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 | Các trường hợp được yêu cầu trả hàng hoặc hoàn tiền | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 566 | `buyer`, `return-eligibility`, Điều 3.1 |
+| 2 | Thời hạn và điều kiện tài khoản khi gửi yêu cầu | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 578 | `buyer`, `return-deadline`, Điều 3.2–3.4 |
+| 3 | Điều kiện và hạn mức trả hàng COM | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 542 | `buyer`, `return-com`, Điều 4 |
+| 4 | Thời hạn và quyền phản hồi của Người Bán | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 557 | `seller`, `seller-response`, Điều 5 |
+| 5 | Đóng gói và bằng chứng cho sản phẩm hoàn trả | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 570 | `buyer`, `return-evidence`, Điều 6 |
+| 6 | Chi phí vận chuyển hoàn trả và điều kiện hoàn tiền | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 642 | `both`, `shipping-refund`, Điều 7–9 |
+| 7 | Quy trình giải quyết tranh chấp và xử lý khiếu nại | [Shopee 77265](https://help.shopee.vn/portal/4/article/77265) | 2026-08-03 / 2024-03-15 | 830 | `both`, `dispute-resolution`, Mục 1–2 |
 
 **Danh sách kiểm tra quản trị dữ liệu (Data governance checklist):**
-- [ ] Tập tài liệu (Corpus) chỉ chứa nguồn công khai/được phép dùng và không chứa dữ liệu cá nhân, thông tin đăng nhập hoặc tài liệu nội bộ.
-- [ ] Mỗi tài liệu có `source_url`, `retrieved_at`, `document_version` (hoặc ngày hiệu lực) trong metadata.
+- [x] Tập tài liệu (Corpus) chỉ chứa nguồn công khai/được phép dùng và không chứa dữ liệu cá nhân, thông tin đăng nhập hoặc tài liệu nội bộ.
+- [x] Mỗi tài liệu có `source_url`, `retrieved_at`, `document_version` (hoặc ngày hiệu lực) trong metadata.
 
 ### Cấu trúc Metadata (Metadata Schema)
 
 | Trường metadata | Kiểu | Ví dụ giá trị | Tại sao hữu ích cho truy xuất (retrieval)? |
 |----------------|------|---------------|-------------------------------|
-| | | | |
-| | | | |
+| `doc_id` | string | `seller-return-response` | Định danh duy nhất, liên kết gold answer với tài liệu và hỗ trợ xóa toàn bộ chunk của một tài liệu. |
+| `title` | string | `Thời hạn và quyền phản hồi của Người Bán` | Giúp đọc và truy vết kết quả. |
+| `source_url` | URL | `https://help.shopee.vn/portal/4/article/77251` | Cho phép kiểm tra thông tin tại nguồn chính thức. |
+| `retrieved_at` | date | `2026-08-03` | Cho biết thời điểm nhóm lấy dữ liệu. |
+| `document_version` | date/string | `2026-03-11` | Phân biệt phiên bản chính sách được dùng để benchmark. |
+| `effective_date` | date | `2026-03-11` | Hỗ trợ kiểm tra hiệu lực của quy định. |
+| `customer_role` | enum | `buyer`, `seller`, `both` | Cho phép pre-filter đúng đối tượng và giảm nhiễu. |
+| `category` | string | `seller-response` | Thu hẹp theo chủ đề như thời hạn, bằng chứng hoặc tranh chấp. |
+| `platform` | string | `shopee` | Giữ khả năng mở rộng corpus sang nền tảng khác mà không trộn chính sách. |
+| `language` | string | `vi` | Hỗ trợ lọc ngôn ngữ. |
+| `source_section` | string | `Điều 5` | Truy vết gold answer đến đúng điều/khoản trên trang nguồn. |
 
 ---
 
@@ -99,11 +110,11 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 
 | # | Câu hỏi (Query) | Câu trả lời chuẩn (Gold Answer) | Chunk nào chứa thông tin? |
 |---|-------|-------------------------------|--------------------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
+| 1 | Người mua có bao lâu để gửi yêu cầu trả hàng hoặc hoàn tiền sau khi đơn hàng được giao thành công? | Thời hạn chung là 15 ngày kể từ khi giao thành công; riêng thực phẩm tươi sống và đông lạnh là 24 giờ. | `return-request-deadline`, Điều 3.2–3.4; filter `customer_role=buyer` |
+| 2 | Những trường hợp nào có thể làm căn cứ yêu cầu trả hàng hoặc hoàn tiền? | Gồm không nhận đủ hàng, hàng giả, hàng hư hại, giao sai, khác biệt rõ với mô tả, hết hạn, có thỏa thuận với Người Bán hoặc đủ điều kiện trả hàng COM. | `return-eligibility`, Điều 3.1; filter `customer_role=buyer` |
+| 3 | Người bán phải phản hồi yêu cầu trả hàng trong bao lâu và điều gì xảy ra nếu không phản hồi? | Người Bán có 2 ngày lịch kể từ khi nhận thông báo; không phản hồi được hiểu là đồng ý với quyết định xử lý của Shopee. | `seller-return-response`, Điều 5; **filter bắt buộc `customer_role=seller`** |
+| 4 | Người mua cần chuẩn bị sản phẩm và bằng chứng như thế nào khi hoàn trả hàng? | Đóng gói đúng quy định, kèm đủ phụ kiện, hóa đơn và tem bảo hành, giữ hàng nguyên vẹn; quay video hoặc chụp ảnh khi nhận và khi đóng gói hoàn trả. | `returned-product-evidence`, Điều 6; filter `customer_role=buyer` |
+| 5 | Tranh chấp không phải khiếu nại trả hàng hoặc hoàn tiền được xử lý trong bao lâu sau khi Shopee nhận đủ tài liệu? | Shopee đưa ra hướng giải quyết trong 7 ngày làm việc kể từ khi nhận đủ thông tin và tài liệu; vụ phức tạp có thể kéo dài hơn. | `dispute-resolution-process`, Mục 1; filter `customer_role=both` |
 
 ### Tổng hợp chất lượng truy xuất của nhóm
 

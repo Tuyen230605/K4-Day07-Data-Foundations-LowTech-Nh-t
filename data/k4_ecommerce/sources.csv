@@ -1,3 +1,8 @@
 doc_id,file_path,title,source_url,retrieved_at,document_version,license_or_permission
-k4-returns-policy,data/k4_ecommerce/returns-policy.md,Chính sách đổi trả,https://example.com/chinh-sach/doi-tra,2026-08-02,2026.1,example-template-replace-me
-k4-seller-listing,data/k4_ecommerce/seller-listing.md,Quy định đăng bán,https://example.com/nguoi-ban/dang-ban,2026-08-02,2026.1,example-template-replace-me
+return-eligibility,data/k4_ecommerce/return-eligibility.md,Các trường hợp được yêu cầu trả hàng hoặc hoàn tiền,https://help.shopee.vn/portal/4/article/77251,2026-08-03,2026-03-11,public-page
+return-request-deadline,data/k4_ecommerce/return-request-deadline.md,Thời hạn và điều kiện tài khoản khi gửi yêu cầu,https://help.shopee.vn/portal/4/article/77251,2026-08-03,2026-03-11,public-page
+return-com-rules,data/k4_ecommerce/return-com-rules.md,Điều kiện và hạn mức trả hàng COM,https://help.shopee.vn/portal/4/article/77251,2026-08-03,2026-03-11,public-page
+seller-return-response,data/k4_ecommerce/seller-return-response.md,Thời hạn và quyền phản hồi của Người Bán,https://help.shopee.vn/portal/4/article/77251,2026-08-03,2026-03-11,public-page
+returned-product-evidence,data/k4_ecommerce/returned-product-evidence.md,Đóng gói và bằng chứng cho sản phẩm hoàn trả,https://help.shopee.vn/portal/4/article/77251,2026-08-03,2026-03-11,public-page
+return-shipping-refund,data/k4_ecommerce/return-shipping-refund.md,Chi phí vận chuyển hoàn trả và điều kiện hoàn tiền,https://help.shopee.vn/portal/4/article/77251,2026-08-03,2026-03-11,public-page
+dispute-resolution-process,data/k4_ecommerce/dispute-resolution-process.md,Quy trình giải quyết tranh chấp và xử lý khiếu nại,https://help.shopee.vn/portal/4/article/77265,2026-08-03,2024-03-15,public-page
