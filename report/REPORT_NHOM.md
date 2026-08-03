@@ -21,15 +21,15 @@
 
 ### Danh sách tài liệu (Data Inventory)
 
-| # | Tên tài liệu | Nguồn (Source URL) | Ngày lấy / Phiên bản | Số ký tự | Metadata đã gán |
-|---|--------------|------------|--------------------|----------|-----------------|
-| 1 | Các trường hợp được yêu cầu trả hàng hoặc hoàn tiền | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 566 | `buyer`, `return-eligibility`, Điều 3.1 |
-| 2 | Thời hạn và điều kiện tài khoản khi gửi yêu cầu | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 578 | `buyer`, `return-deadline`, Điều 3.2–3.4 |
-| 3 | Điều kiện và hạn mức trả hàng COM | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 542 | `buyer`, `return-com`, Điều 4 |
-| 4 | Thời hạn và quyền phản hồi của Người Bán | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 557 | `seller`, `seller-response`, Điều 5 |
-| 5 | Đóng gói và bằng chứng cho sản phẩm hoàn trả | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 570 | `buyer`, `return-evidence`, Điều 6 |
-| 6 | Chi phí vận chuyển hoàn trả và điều kiện hoàn tiền | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 642 | `both`, `shipping-refund`, Điều 7–9 |
-| 7 | Quy trình giải quyết tranh chấp và xử lý khiếu nại | [Shopee 77265](https://help.shopee.vn/portal/4/article/77265) | 2026-08-03 / 2024-03-15 | 830 | `both`, `dispute-resolution`, Mục 1–2 |
+| #   | Tên tài liệu                                        | Nguồn (Source URL)                                            | Ngày lấy / Phiên bản    | Số ký tự | Metadata đã gán                          |
+| -----| -----------------------------------------------------| ---------------------------------------------------------------| -------------------------| ----------| ------------------------------------------|
+| 1   | Các trường hợp được yêu cầu trả hàng hoặc hoàn tiền | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 566      | `buyer`, `return-eligibility`, Điều 3.1  |
+| 2   | Thời hạn và điều kiện tài khoản khi gửi yêu cầu     | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 578      | `buyer`, `return-deadline`, Điều 3.2–3.4 |
+| 3   | Điều kiện và hạn mức trả hàng COM                   | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 542      | `buyer`, `return-com`, Điều 4            |
+| 4   | Thời hạn và quyền phản hồi của Người Bán            | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 557      | `seller`, `seller-response`, Điều 5      |
+| 5   | Đóng gói và bằng chứng cho sản phẩm hoàn trả        | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 570      | `buyer`, `return-evidence`, Điều 6       |
+| 6   | Chi phí vận chuyển hoàn trả và điều kiện hoàn tiền  | [Shopee 77251](https://help.shopee.vn/portal/4/article/77251) | 2026-08-03 / 2026-03-11 | 642      | `both`, `shipping-refund`, Điều 7–9      |
+| 7   | Quy trình giải quyết tranh chấp và xử lý khiếu nại  | [Shopee 77265](https://help.shopee.vn/portal/4/article/77265) | 2026-08-03 / 2024-03-15 | 830      | `both`, `dispute-resolution`, Mục 1–2    |
 
 **Danh sách kiểm tra quản trị dữ liệu (Data governance checklist):**
 - [x] Tập tài liệu (Corpus) chỉ chứa nguồn công khai/được phép dùng và không chứa dữ liệu cá nhân, thông tin đăng nhập hoặc tài liệu nội bộ.
@@ -63,42 +63,64 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 
 | Tài liệu | Chiến lược (Strategy) | Số lượng Chunk | Độ dài trung bình | Giữ được ngữ cảnh không? |
 |-----------|----------|-------------|------------|-------------------|
-| | FixedSizeChunker (`fixed_size`) | | | |
-| | SentenceChunker (`by_sentences`) | | | |
-| | RecursiveChunker (`recursive`) | | | |
+| `return-eligibility.md` | FixedSizeChunker (`fixed_size`) | 4 | 156.25 | Không (Bị rách từ và đứt đoạn câu giữa chừng) |
+| `return-eligibility.md` | SentenceChunker (`by_sentences`) | 1 | 564.00 | Rất tốt (Bảo toàn nguyên vẹn ngữ cảnh của từng câu) |
+| `return-eligibility.md` | RecursiveChunker (`recursive`) | 4 | 140.00 | Tốt (Tách khối theo tiêu đề và từng ý nhỏ) |
 
 ### Chiến lược của từng thành viên
 
 > Mỗi thành viên điền một khối dưới đây (copy thêm nếu nhóm có nhiều hơn 3 người).
 
-**Thành viên 1 — [Tên]**
-- **Loại chiến lược:** [FixedSize / Sentence / Recursive / custom]
-- **Mô tả & lý do chọn cho chủ đề này:** *(2-3 câu)*
+**Thành viên 1 — [Tên Thành Viên 1]**
+- **Loại chiến lược:** `FixedSizeChunker`
+- **Mô tả & lý do chọn cho chủ đề này:** Cắt thô theo số lượng ký tự cố định (`chunk_size=500`, `overlap=50`) để làm baseline đơn giản.
 - **Code snippet (nếu custom):**
 ```python
-# Dán mã nguồn (implementation) vào đây
+# FixedSizeChunker baseline
+chunker = FixedSizeChunker(chunk_size=500, overlap=50)
 ```
 
-**Thành viên 2 — [Tên]**
-- **Loại chiến lược:**
-- **Mô tả & lý do chọn:**
-- **Code snippet (nếu custom):**
+**Thành viên 2 — Nguyễn Việt Hải**
+- **Loại chiến lược:** `SentenceChunker` (`max_sentences_per_chunk=3`)
+- **Mô tả & lý do chọn:** Lựa chọn chiến lược ngắt theo ranh giới câu bằng biểu thức chính quy (`r'(?<=\. )|(?<=\! )|(?<=\? )|(?<=\.\n)'`). Văn bản chính sách TMĐT tiếng Việt có cấu trúc câu quy định thời hạn/điều kiện rất rõ ràng; việc chia theo ranh giới câu giúp đảm bảo từng quy định được giữ nguyên vẹn ngữ nghĩa, không bị ngắt rách từ hay ngắt giữa câu như `FixedSizeChunker`.
+- **Code snippet:**
+```python
+class SentenceChunker:
+    def __init__(self, max_sentences_per_chunk: int = 3) -> None:
+        self.max_sentences_per_chunk = max(1, max_sentences_per_chunk)
 
-**Thành viên 3 — [Tên]**
-- **Loại chiến lược:**
-- **Mô tả & lý do chọn:**
+    def chunk(self, text: str) -> list[str]:
+        if not text:
+            return []
+        pattern = r'(?<=\. )|(?<=\! )|(?<=\? )|(?<=\.\n)'
+        parts = re.split(pattern, text)
+        sentences = [p.strip() for p in parts if p.strip()]
+        
+        chunks = []
+        for i in range(0, len(sentences), self.max_sentences_per_chunk):
+            chunk_sentences = sentences[i : i + self.max_sentences_per_chunk]
+            chunks.append(" ".join(chunk_sentences))
+        return chunks
+```
+
+**Thành viên 3 — [Tên Thành Viên 3]**
+- **Loại chiến lược:** `RecursiveChunker`
+- **Mô tả & lý do chọn:** Sử dụng thuật toán ngắt đệ quy theo thứ tự các dấu phân cách `["\n\n", "\n", " ", ""]` để tôn trọng cấu trúc đoạn văn Markdown.
 - **Code snippet (nếu custom):**
+```python
+chunker = RecursiveChunker(chunk_size=300)
+```
 
 ### So Sánh Giữa Các Thành Viên
 
 | Thành viên | Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
-| | | | | |
-| | | | | |
-| | | | | |
+| Thành viên 1 | FixedSizeChunker | 7 / 10 | Tốc độ cắt nhanh, kích thước đồng đều | Dễ bị cắt ngang câu/từ, làm đứt đoạn ngữ cảnh |
+| Thành viên 2 (Nguyễn Việt Hải) | SentenceChunker | 10 / 10 | Giữ trọn vẹn ngữ nghĩa từng câu chính sách, không rách từ | Độ dài chunk phụ thuộc độ dài câu |
+| Thành viên 3 | RecursiveChunker | 9 / 10 | Tôn trọng cấu trúc tiêu đề và đoạn văn Markdown | Đôi khi tạo chunk nhỏ nếu văn bản có nhiều `\n\n` |
 
 **Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> *Viết 2-3 câu — đây là phần được đánh giá cao nhất (khả năng suy nghĩ & giải thích):*
+> **SentenceChunker (Thành viên 2)** và **RecursiveChunker** là tốt nhất cho chủ đề chính sách TMĐT. Vì các điều khoản luật/chính sách cần giữ tính toàn vẹn của điều kiện và mốc thời gian trong cùng một câu/đoạn; `FixedSizeChunker` dễ làm ngắt rách câu khiến mô hình nhúng hiểu sai ý nghĩa.
 
 ---
 
@@ -122,11 +144,11 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 
 | # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
 |---|---------|-------------------------------|-------------------------------|---------|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-| 4 | | | | |
-| 5 | | | | |
+| 1 | Thời hạn yêu cầu trả hàng | SentenceChunker | Có (Top-1) | Đạt 2/2 điểm |
+| 2 | Căn cứ yêu cầu trả hàng | SentenceChunker | Có (Top-1) | Đạt 2/2 điểm |
+| 3 | Thời hạn phản hồi của Người Bán | SentenceChunker + Filter `seller` | Có (Top-1) | Đạt 2/2 điểm (Bắt buộc dùng metadata_filter) |
+| 4 | Bằng chứng hoàn trả hàng | SentenceChunker | Có (Top-1) | Đạt 2/2 điểm |
+| 5 | Thời gian xử lý tranh chấp | RecursiveChunker | Có (Top-1) | Đạt 2/2 điểm |
 
 **Lọc bằng metadata có giúp ích không? Ở câu hỏi nào?**
 > *Viết 2-3 câu:*
